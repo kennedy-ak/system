@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Logged Out - MyHub{% endblock %}
+
+{% block content %}
+<style>
+    .auth-container {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .auth-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .auth-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2.5rem;
+        text-align: center;
+    }
+    .auth-header i {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+    }
+    .auth-header h2 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 2rem;
+    }
+    .auth-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+    }
+    .auth-body {
+        padding: 2.5rem;
+        text-align: center;
+    }
+    .success-icon {
+        font-size: 4rem;
+        color: #28a745;
+        margin-bottom: 1.5rem;
+    }
+    .message-text {
+        font-size: 1.1rem;
+        color: #666;
+        margin-bottom: 2rem;
+    }
+    .btn-action {
+        padding: 0.85rem 2rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        margin: 0.5rem;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-primary-action {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+    }
+    .btn-primary-action:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    .btn-secondary-action {
+        background: white;
+        border: 2px solid #667eea;
+        color: #667eea;
+    }
+    .btn-secondary-action:hover {
+        background: #f8f9fa;
+        transform: translateY(-2px);
+    }
+</style>
+
+<div class="auth-container">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-5 col-lg-4">
+            <div class="card auth-card">
+                <div class="auth-header">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <h2>Successfully Logged Out</h2>
+                    <p>See you next time!</p>
+                </div>
+                <div class="auth-body">
+                    <div class="success-icon">
+                        <i class="bi bi-check-circle-fill"></i>
+                    </div>
+                    <p class="message-text">
+                        You have been successfully logged out of your MyHub account.
+                    </p>
+                    <div>
+                        <a href="{% url 'login' %}" class="btn btn-primary btn-action btn-primary-action">
+                            <i class="bi bi-box-arrow-in-right me-2"></i>Log In Again
+                        </a>
+                    </div>
+                    <div class="mt-2">
+                        <a href="{% url 'accounts:register' %}" class="btn btn-action btn-secondary-action">
+                            <i class="bi bi-person-plus me-2"></i>Register New Account
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

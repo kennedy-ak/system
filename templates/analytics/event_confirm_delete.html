@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Delete Event{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Delete Event</h2>
+                <p>Are you sure you want to delete event "{{ object.name }}"?</p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                        <a href="{% url 'analytics:event_list' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

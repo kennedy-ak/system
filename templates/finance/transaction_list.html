@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Transactions{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Transactions</h1>
+    <a href="{% url 'finance:transaction_create' %}" class="btn btn-primary">New Transaction</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>Project</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for transaction in object_list %}
+                <tr>
+                    <td>{{ transaction.date|date }}</td>
+                    <td>
+                        {% if transaction.project %}
+                            <a href="{% url 'projects:project_detail' transaction.project.pk %}">{{ transaction.project.title }}</a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td><span class="badge {% if transaction.t_type == 'income' %}bg-success{% else %}bg-danger{% endif %}">
+                        {{ transaction.get_t_type_display }}
+                    </span></td>
+                    <td>{{ transaction.amount }} {{ transaction.currency }}</td>
+                    <td>{{ transaction.description|truncatewords:10 }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{% url 'finance:transaction_edit' transaction.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <a href="{% url 'finance:transaction_delete' transaction.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">No transactions yet. <a href="{% url 'finance:transaction_create' %}">Create one</a>!</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

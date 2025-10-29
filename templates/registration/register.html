@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Register - MyHub{% endblock %}
+
+{% block content %}
+<style>
+    .auth-container {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem 0;
+    }
+    .auth-card {
+        border: none;
+        border-radius: 15px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+    .auth-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2.5rem;
+        text-align: center;
+    }
+    .auth-header h2 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 2rem;
+    }
+    .auth-header p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+    }
+    .auth-body {
+        padding: 2.5rem;
+    }
+    .form-floating {
+        margin-bottom: 1.5rem;
+    }
+    .form-floating input {
+        border-radius: 10px;
+        border: 2px solid #e0e0e0;
+        padding: 1rem 0.75rem;
+        height: auto;
+    }
+    .form-floating input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    .form-floating label {
+        padding: 1rem 0.75rem;
+    }
+    .btn-register {
+        width: 100%;
+        padding: 0.85rem;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-register:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+    }
+    .login-link {
+        text-align: center;
+        margin-top: 1.5rem;
+        padding: 1rem;
+        background: #f8f9fa;
+        border-radius: 10px;
+    }
+    .login-link a {
+        color: #667eea;
+        font-weight: 600;
+        text-decoration: none;
+    }
+    .login-link a:hover {
+        text-decoration: underline;
+    }
+    .error-message {
+        background: #fee;
+        border-left: 4px solid #dc3545;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: 5px;
+        color: #721c24;
+    }
+    .help-text {
+        font-size: 0.85rem;
+        color: #666;
+        margin-top: 0.25rem;
+        display: block;
+    }
+    .errorlist {
+        list-style: none;
+        padding: 0;
+        margin: 0.5rem 0 0 0;
+    }
+    .errorlist li {
+        color: #dc3545;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+    }
+    .input-wrapper {
+        position: relative;
+    }
+    .password-requirements {
+        background: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        border-radius: 5px;
+        font-size: 0.85rem;
+    }
+    .password-requirements ul {
+        margin: 0.5rem 0 0 0;
+        padding-left: 1.5rem;
+    }
+    .password-requirements li {
+        margin: 0.25rem 0;
+    }
+</style>
+
+<div class="auth-container">
+    <div class="row justify-content-center w-100">
+        <div class="col-md-6 col-lg-5">
+            <div class="card auth-card">
+                <div class="auth-header">
+                    <i class="bi bi-person-plus-fill" style="font-size: 3rem;"></i>
+                    <h2>Create Account</h2>
+                    <p>Join MyHub to manage your personal projects</p>
+                </div>
+                <div class="auth-body">
+                    {% if form.errors %}
+                        <div class="error-message">
+                            <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                            <strong>Registration Failed!</strong> Please correct the errors below.
+                        </div>
+                    {% endif %}
+
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <div class="input-wrapper">
+                            <div class="form-floating">
+                                <input type="text"
+                                       class="form-control {% if form.username.errors %}is-invalid{% endif %}"
+                                       id="id_username"
+                                       name="username"
+                                       placeholder="Username"
+                                       value="{{ form.username.value|default:'' }}"
+                                       required
+                                       autofocus>
+                                <label for="id_username">
+                                    <i class="bi bi-person me-2"></i>Username
+                                </label>
+                            </div>
+                            {% if form.username.errors %}
+                                <ul class="errorlist">
+                                    {% for error in form.username.errors %}
+                                        <li><i class="bi bi-x-circle me-1"></i>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="input-wrapper">
+                            <div class="form-floating">
+                                <input type="email"
+                                       class="form-control {% if form.email.errors %}is-invalid{% endif %}"
+                                       id="id_email"
+                                       name="email"
+                                       placeholder="Email"
+                                       value="{{ form.email.value|default:'' }}"
+                                       required>
+                                <label for="id_email">
+                                    <i class="bi bi-envelope me-2"></i>Email Address
+                                </label>
+                            </div>
+                            {% if form.email.errors %}
+                                <ul class="errorlist">
+                                    {% for error in form.email.errors %}
+                                        <li><i class="bi bi-x-circle me-1"></i>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="password-requirements">
+                            <strong><i class="bi bi-info-circle me-2"></i>Password Requirements:</strong>
+                            <ul>
+                                <li>At least 8 characters long</li>
+                                <li>Cannot be entirely numeric</li>
+                                <li>Cannot be too common</li>
+                            </ul>
+                        </div>
+
+                        <div class="input-wrapper">
+                            <div class="form-floating">
+                                <input type="password"
+                                       class="form-control {% if form.password1.errors %}is-invalid{% endif %}"
+                                       id="id_password1"
+                                       name="password1"
+                                       placeholder="Password"
+                                       required>
+                                <label for="id_password1">
+                                    <i class="bi bi-lock me-2"></i>Password
+                                </label>
+                            </div>
+                            {% if form.password1.errors %}
+                                <ul class="errorlist">
+                                    {% for error in form.password1.errors %}
+                                        <li><i class="bi bi-x-circle me-1"></i>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <div class="input-wrapper">
+                            <div class="form-floating">
+                                <input type="password"
+                                       class="form-control {% if form.password2.errors %}is-invalid{% endif %}"
+                                       id="id_password2"
+                                       name="password2"
+                                       placeholder="Confirm Password"
+                                       required>
+                                <label for="id_password2">
+                                    <i class="bi bi-lock-fill me-2"></i>Confirm Password
+                                </label>
+                            </div>
+                            {% if form.password2.errors %}
+                                <ul class="errorlist">
+                                    {% for error in form.password2.errors %}
+                                        <li><i class="bi bi-x-circle me-1"></i>{{ error }}</li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-register">
+                            <i class="bi bi-person-check me-2"></i>Create Account
+                        </button>
+                    </form>
+
+                    <div class="login-link">
+                        Already have an account?
+                        <a href="{% url 'login' %}">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Login Here
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

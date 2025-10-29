@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Analytics Events{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Analytics Events</h1>
+    <a href="{% url 'analytics:event_create' %}" class="btn btn-primary">New Event</a>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Event Name</th>
+                <th>Project</th>
+                <th>User</th>
+                <th>Start Time</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for event in object_list %}
+                <tr>
+                    <td>{{ event.title }}</td>
+                    <td>{{ event.project.title|default:"-" }}</td>
+                    <td>{{ event.user.username|default:"-" }}</td>
+                    <td>{{ event.start_time|date:"Y-m-d H:i:s"|default:"-" }}</td>
+                    <td>
+                        <a href="{% url 'analytics:event_delete' event.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5">No events recorded yet.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

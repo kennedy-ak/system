@@ -1,0 +1,7 @@
+django
+djangorestframework
+djangorestframework-simplejwt
+python-decouple
+Pillow
+reportlab
+openpyxl

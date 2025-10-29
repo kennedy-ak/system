@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Delete Transaction{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Delete Transaction</h2>
+                <p>Are you sure you want to delete this transaction?</p>
+                <p>
+                    Amount: {{ object.amount }} {{ object.currency }}<br>
+                    Type: {{ object.get_t_type_display }}<br>
+                    Date: {{ object.date|date }}
+                </p>
+                <form method="post">
+                    {% csrf_token %}
+                    <div class="btn-group">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                        <a href="{% url 'finance:transaction_list' %}" class="btn btn-secondary">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
