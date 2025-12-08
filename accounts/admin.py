@@ -1,3 +1,13 @@
 from django.contrib import admin
+from .models import UserProfile
 
-# Register your models here.
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ['user', 'bio_preview']
+    search_fields = ['user__username', 'user__email', 'bio']
+    list_filter = ['user__date_joined']
+
+    def bio_preview(self, obj):
+        return obj.bio[:50] + '...' if len(obj.bio) > 50 else obj.bio
+    bio_preview.short_description = 'Bio'

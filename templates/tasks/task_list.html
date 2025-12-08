@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Tasks{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>My Tasks</h1>
+    <a href="{% url 'tasks:task_create' %}" class="btn btn-primary">New Task</a>
+</div>
+
+<form method="get" class="mb-4">
+    <div class="row g-3">
+        <div class="col-md-3">
+            <input type="text" name="search" class="form-control" placeholder="Search tasks..." value="{{ search_query }}">
+        </div>
+        <div class="col-md-2">
+            <select name="status" class="form-select">
+                <option value="">All Status</option>
+                <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                <option value="in_progress" {% if status_filter == 'in_progress' %}selected{% endif %}>In Progress</option>
+                <option value="completed" {% if status_filter == 'completed' %}selected{% endif %}>Completed</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="priority" class="form-select">
+                <option value="">All Priorities</option>
+                <option value="low" {% if priority_filter == 'low' %}selected{% endif %}>Low</option>
+                <option value="medium" {% if priority_filter == 'medium' %}selected{% endif %}>Medium</option>
+                <option value="high" {% if priority_filter == 'high' %}selected{% endif %}>High</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="project" class="form-select">
+                <option value="">All Projects</option>
+                {% for project in user_projects %}
+                <option value="{{ project.id }}" {% if project_filter == project.id|stringformat:"s" %}selected{% endif %}>{{ project.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-secondary w-100">Filter</button>
+        </div>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Task</th>
+                <th>Project</th>
+                <th>Status</th>
+                <th>Priority</th>
+                <th>Deadline</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task in object_list %}
+                <tr {% if task.is_overdue %}class="table-danger"{% endif %}>
+                    <td>
+                        <strong>{{ task.title }}</strong><br>
+                        <small class="text-muted">{{ task.description|truncatewords:15 }}</small>
+                    </td>
+                    <td>
+                        {% if task.project %}
+                            <a href="{% url 'projects:project_detail' task.project.pk %}">{{ task.project.title }}</a>
+                        {% else %}
+                            <span class="text-muted">Personal</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge
+                            {% if task.status == 'completed' %}bg-success
+                            {% elif task.status == 'in_progress' %}bg-primary
+                            {% else %}bg-secondary{% endif %}">
+                            {{ task.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge
+                            {% if task.priority == 'high' %}bg-danger
+                            {% elif task.priority == 'medium' %}bg-warning
+                            {% else %}bg-info{% endif %}">
+                            {{ task.get_priority_display }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if task.deadline %}
+                            {{ task.deadline|date:"M d, Y H:i" }}
+                            {% if task.is_overdue %}
+                                <br><span class="badge bg-danger">Overdue</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-sm btn-outline-info">View</a>
+                            <a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <a href="{% url 'tasks:task_delete' task.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6">No tasks yet. <a href="{% url 'tasks:task_create' %}">Create one</a>!</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">First</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}

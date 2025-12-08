@@ -71,4 +71,66 @@
         </div>
     </div>
 </div>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2>Project Tasks</h2>
+            <a href="{% url 'tasks:task_create' %}?project={{ object.pk }}" class="btn btn-success btn-sm">Add Task</a>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Status</th>
+                        <th>Priority</th>
+                        <th>Deadline</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for task in object.tasks.all %}
+                        <tr {% if task.is_overdue %}class="table-danger"{% endif %}>
+                            <td>{{ task.title }}</td>
+                            <td>
+                                <span class="badge
+                                    {% if task.status == 'completed' %}bg-success
+                                    {% elif task.status == 'in_progress' %}bg-primary
+                                    {% else %}bg-secondary{% endif %}">
+                                    {{ task.get_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge
+                                    {% if task.priority == 'high' %}bg-danger
+                                    {% elif task.priority == 'medium' %}bg-warning
+                                    {% else %}bg-info{% endif %}">
+                                    {{ task.get_priority_display }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if task.deadline %}
+                                    {{ task.deadline|date:"M d, Y H:i" }}
+                                {% else %}
+                                    -
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <a href="{% url 'tasks:task_detail' task.pk %}" class="btn btn-sm btn-outline-info">View</a>
+                                    <a href="{% url 'tasks:task_update' task.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5">No tasks for this project yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 {% endblock %}

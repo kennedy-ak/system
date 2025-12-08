@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ object.name }}{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="card-title">{{ object.name }}</h1>
+                <h5 class="card-subtitle mb-2 text-muted">{{ object.get_account_type_display }}</h5>
+            </div>
+            {% if not object.is_active %}
+                <span class="badge bg-secondary">Inactive</span>
+            {% endif %}
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h3>Current Balance</h3>
+                <h2 class="text-primary">${{ current_balance|floatformat:2 }} {{ object.currency }}</h2>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Initial Balance:</strong> ${{ object.initial_balance|floatformat:2 }}</p>
+                <p><strong>Currency:</strong> {{ object.currency }}</p>
+                <p><strong>Created:</strong> {{ object.created_at|date:"M d, Y" }}</p>
+            </div>
+        </div>
+
+        <div class="btn-group mt-3">
+            <a href="{% url 'finance:account_update' object.pk %}" class="btn btn-primary">Edit Account</a>
+            <a href="{% url 'finance:transaction_create' %}?account={{ object.pk }}" class="btn btn-success">Add Transaction</a>
+            <a href="{% url 'finance:account_delete' object.pk %}" class="btn btn-danger">Delete</a>
+            <a href="{% url 'finance:account_list' %}" class="btn btn-secondary">Back to Accounts</a>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h2>Recent Transactions</h2>
+        <div class="table-responsive">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Category</th>
+                        <th>Amount</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for transaction in recent_transactions %}
+                        <tr>
+                            <td>{{ transaction.date|date }}</td>
+                            <td>
+                                <span class="badge {% if transaction.t_type == 'income' %}bg-success{% else %}bg-danger{% endif %}">
+                                    {{ transaction.get_t_type_display }}
+                                </span>
+                            </td>
+                            <td>{{ transaction.category|default:"-" }}</td>
+                            <td>{{ transaction.amount }} {{ transaction.currency }}</td>
+                            <td>{{ transaction.description|truncatewords:10 }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="5">No transactions yet.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        <a href="{% url 'finance:transaction_list' %}?account={{ object.pk }}" class="btn btn-sm btn-outline-primary">View All Transactions</a>
+    </div>
+</div>
+{% endblock %}

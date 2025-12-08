@@ -31,6 +31,30 @@
                             </div>
 
                             <div class="mb-3">
+                                <label for="{{ form.account.id_for_label }}" class="form-label fw-bold">
+                                    <i class="bi bi-bank me-1"></i>Account
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.account }}
+                                <small class="form-text text-muted d-block mt-1">
+                                    <strong>Income:</strong> Where money goes TO | <strong>Expense:</strong> Where money comes FROM
+                                </small>
+                                {% if form.account.errors %}
+                                    <div class="text-danger small">{{ form.account.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="{{ form.category.id_for_label }}" class="form-label fw-bold">
+                                    <i class="bi bi-tags me-1"></i>Category
+                                </label>
+                                {{ form.category }}
+                                {% if form.category.errors %}
+                                    <div class="text-danger small">{{ form.category.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="mb-3">
                                 <label for="{{ form.amount.id_for_label }}" class="form-label fw-bold">
                                     <i class="bi bi-currency-dollar me-1"></i>Amount
                                     <span class="text-danger">*</span>
@@ -76,10 +100,11 @@
                                         <i class="bi bi-info-circle me-1"></i>Quick Tips
                                     </h6>
                                     <ul class="small mb-0 ps-3">
-                                        <li class="mb-1"><strong>Income:</strong> Money received</li>
-                                        <li class="mb-1"><strong>Expense:</strong> Money spent</li>
-                                        <li class="mb-1">Link to a project for better tracking</li>
-                                        <li>Currency defaults to USD</li>
+                                        <li class="mb-1"><strong>Income:</strong> Select account where money goes TO (added)</li>
+                                        <li class="mb-1"><strong>Expense:</strong> Select account where money comes FROM (subtracted)</li>
+                                        <li class="mb-1">Choose a category for better spending analysis</li>
+                                        <li class="mb-1">Link to a project for project-based tracking</li>
+                                        <li>Account balance updates automatically</li>
                                     </ul>
                                 </div>
                             </div>

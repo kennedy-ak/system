@@ -1,0 +1,341 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard - MyHub{% endblock %}
+
+{% block content %}
+<h1 class="mb-4">Welcome to MyHub, {{ user.username }}!</h1>
+
+<!-- Financial Overview -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <a href="{% url 'finance:account_list' %}" class="text-decoration-none">
+            <div class="card bg-primary text-white hover-card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-wallet2"></i> Total Balance
+                    </h5>
+                    <h2>${{ total_balance|floatformat:2 }}</h2>
+                    <small>Across {{ total_accounts }} account(s)</small>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{% url 'finance:transaction_list' %}?type=income" class="text-decoration-none">
+            <div class="card bg-success text-white hover-card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-arrow-down-circle"></i> Monthly Income
+                    </h5>
+                    <h2>${{ monthly_income|floatformat:2 }}</h2>
+                    <small>Last 30 days</small>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{% url 'finance:transaction_list' %}?type=expense" class="text-decoration-none">
+            <div class="card bg-danger text-white hover-card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-arrow-up-circle"></i> Monthly Expenses
+                    </h5>
+                    <h2>${{ monthly_expense|floatformat:2 }}</h2>
+                    <small>Last 30 days</small>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3">
+        <a href="{% url 'finance:transaction_list' %}" class="text-decoration-none">
+            <div class="card {% if monthly_net >= 0 %}bg-info{% else %}bg-warning{% endif %} text-white hover-card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-graph-up"></i> Monthly Net
+                    </h5>
+                    <h2>${{ monthly_net|floatformat:2 }}</h2>
+                    <small>Income - Expenses</small>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Projects and Tasks Overview -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card hover-card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-folder"></i> Projects
+                </h5>
+                <h3>{{ ongoing_projects }} / {{ total_projects }}</h3>
+                <small class="text-muted">Ongoing projects</small>
+                <hr>
+                <a href="{% url 'projects:project_list' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-list"></i> View All
+                </a>
+                <a href="{% url 'projects:project_create' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-circle"></i> New Project
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card hover-card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-check-square"></i> Tasks
+                </h5>
+                <h3>{{ pending_tasks }} Pending</h3>
+                {% if overdue_tasks > 0 %}
+                    <span class="badge bg-danger">
+                        <i class="bi bi-exclamation-triangle"></i> {{ overdue_tasks }} Overdue
+                    </span>
+                {% else %}
+                    <small class="text-muted">No overdue tasks</small>
+                {% endif %}
+                <hr>
+                <a href="{% url 'tasks:task_list' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-list"></i> View All
+                </a>
+                <a href="{% url 'tasks:task_create' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-circle"></i> New Task
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card hover-card h-100">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="bi bi-book"></i> Learning
+                </h5>
+                <h3>{{ courses_in_progress }} / {{ total_courses }}</h3>
+                <small class="text-muted">Courses in progress</small>
+                <hr>
+                <a href="{% url 'learning:course_list' %}" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-list"></i> View All
+                </a>
+                <a href="{% url 'learning:course_create' %}" class="btn btn-sm btn-primary">
+                    <i class="bi bi-plus-circle"></i> New Course
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Two Column Layout -->
+<div class="row">
+    <!-- Left Column -->
+    <div class="col-md-6">
+        <!-- Upcoming Tasks -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-check"></i> Upcoming Tasks
+                    </h5>
+                    <a href="{% url 'tasks:task_list' %}" class="btn btn-sm btn-outline-primary">
+                        View All <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if upcoming_tasks %}
+                    <ul class="list-group list-group-flush">
+                        {% for task in upcoming_tasks %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center {% if task.is_overdue %}bg-danger bg-opacity-10{% endif %}">
+                                <div class="flex-grow-1">
+                                    <a href="{% url 'tasks:task_detail' task.pk %}" class="text-decoration-none text-dark">
+                                        <strong>{{ task.title }}</strong>
+                                    </a>
+                                    <br>
+                                    <small class="text-muted">
+                                        {% if task.project %}
+                                            <a href="{% url 'projects:project_detail' task.project.pk %}" class="text-muted">{{ task.project.title }}</a> -
+                                        {% endif %}
+                                        Due: {{ task.deadline|date:"M d, H:i" }}
+                                    </small>
+                                </div>
+                                <span class="badge {% if task.priority == 'high' %}bg-danger{% elif task.priority == 'medium' %}bg-warning{% else %}bg-info{% endif %}">
+                                    {{ task.get_priority_display }}
+                                </span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No upcoming tasks with deadlines.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Projects -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-folder"></i> Recent Projects
+                    </h5>
+                    <a href="{% url 'projects:project_list' %}" class="btn btn-sm btn-outline-primary">
+                        View All <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_projects %}
+                    <ul class="list-group list-group-flush">
+                        {% for project in recent_projects %}
+                            <li class="list-group-item">
+                                <a href="{% url 'projects:project_detail' project.pk %}"><strong>{{ project.title }}</strong></a>
+                                <span class="badge {% if project.status == 'completed' %}bg-success{% else %}bg-warning{% endif %} float-end">
+                                    {{ project.get_status_display }}
+                                </span>
+                                <br>
+                                <small class="text-muted">{{ project.description|truncatewords:15 }}</small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No projects yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column -->
+    <div class="col-md-6">
+        <!-- Recent Transactions -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-cash-stack"></i> Recent Transactions
+                    </h5>
+                    <a href="{% url 'finance:transaction_list' %}" class="btn btn-sm btn-outline-primary">
+                        View All <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_transactions %}
+                    <ul class="list-group list-group-flush">
+                        {% for transaction in recent_transactions %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <div class="flex-grow-1">
+                                    <span class="badge {% if transaction.t_type == 'income' %}bg-success{% else %}bg-danger{% endif %}">
+                                        {{ transaction.get_t_type_display }}
+                                    </span>
+                                    {% if transaction.account %}
+                                        <a href="{% url 'finance:account_detail' transaction.account.pk %}" class="text-decoration-none">
+                                            {{ transaction.account.name }}
+                                        </a>
+                                    {% else %}
+                                        No Account
+                                    {% endif %}
+                                    <br>
+                                    <small class="text-muted">{{ transaction.category|default:"Uncategorized" }} - {{ transaction.date|date:"M d" }}</small>
+                                </div>
+                                <strong {% if transaction.t_type == 'income' %}class="text-success"{% else %}class="text-danger"{% endif %}>
+                                    {% if transaction.t_type == 'income' %}+{% else %}-{% endif %}${{ transaction.amount|floatformat:2 }}
+                                </strong>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No transactions yet.</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Events -->
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="bi bi-calendar-event"></i> Recent Events
+                    </h5>
+                    <a href="{% url 'analytics:event_list' %}" class="btn btn-sm btn-outline-primary">
+                        View All <i class="bi bi-arrow-right"></i>
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if recent_events %}
+                    <ul class="list-group list-group-flush">
+                        {% for event in recent_events %}
+                            <li class="list-group-item">
+                                <a href="{% url 'analytics:event_update' event.pk %}" class="text-decoration-none text-dark">
+                                    <strong>{{ event.title }}</strong>
+                                </a>
+                                <span class="badge bg-secondary float-end">{{ event.get_event_type_display }}</span>
+                                <br>
+                                <small class="text-muted">
+                                    {% if event.project %}
+                                        <a href="{% url 'projects:project_detail' event.project.pk %}" class="text-muted">{{ event.project.title }}</a> -
+                                    {% endif %}
+                                    {{ event.start_time|date:"M d, H:i"|default:"No time set" }}
+                                </small>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p class="text-muted">No events yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Quick Actions</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3 mb-2">
+                <a href="{% url 'finance:account_create' %}" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-bank"></i> New Account
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{% url 'finance:transaction_create' %}" class="btn btn-outline-success w-100">
+                    <i class="bi bi-cash"></i> New Transaction
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{% url 'tasks:task_create' %}" class="btn btn-outline-warning w-100">
+                    <i class="bi bi-check-square"></i> New Task
+                </a>
+            </div>
+            <div class="col-md-3 mb-2">
+                <a href="{% url 'analytics:event_create' %}" class="btn btn-outline-info w-100">
+                    <i class="bi bi-calendar-event"></i> New Event
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        cursor: pointer;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    }
+
+    a.text-decoration-none:hover {
+        text-decoration: none;
+    }
+
+    .card-header {
+        cursor: pointer;
+    }
+</style>
+{% endblock %}

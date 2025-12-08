@@ -1,8 +1,102 @@
+:root {
+    --color-neon-pink: #F72585;
+    --color-purple: #7209B7;
+    --color-grape: #3A0CA3;
+    --color-blue: #4361EE;
+    --color-sky-blue: #4CC9F0;
+}
+
+body {
+    background-color: #f8f9fa;
+}
+
+/* Navbar Customization */
+.navbar {
+    background-color: var(--color-grape) !important;
+    background: linear-gradient(to right, var(--color-grape), var(--color-purple));
+}
+
+.navbar-brand {
+    font-weight: bold;
+    color: white !important;
+}
+
+.nav-link {
+    color: rgba(255, 255, 255, 0.9) !important;
+    transition: color 0.3s ease;
+}
+
+.nav-link:hover {
+    color: var(--color-sky-blue) !important;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--color-blue);
+    border-color: var(--color-blue);
+}
+
+.btn-primary:hover {
+    background-color: var(--color-grape);
+    border-color: var(--color-grape);
+}
+
+.btn-secondary {
+    background-color: var(--color-purple);
+    border-color: var(--color-purple);
+}
+
+.btn-secondary:hover {
+    background-color: var(--color-grape);
+    border-color: var(--color-grape);
+}
+
+.btn-success {
+    background-color: var(--color-sky-blue);
+    border-color: var(--color-sky-blue);
+    color: white;
+}
+
+.btn-success:hover {
+    background-color: var(--color-blue);
+    border-color: var(--color-blue);
+}
+
+.btn-danger {
+    background-color: var(--color-neon-pink);
+    border-color: var(--color-neon-pink);
+}
+
+.btn-danger:hover {
+    background-color: #d91c70; /* Slightly darker pink */
+    border-color: #d91c70;
+}
+
+/* Cards */
+.card {
+    border: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 1rem;
+    transition: transform 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background-color: var(--color-blue);
+    color: white;
+    border-bottom: none;
+}
+
+/* Progress Bars */
 .progress {
     height: 25px;
-    background-color: #f5f5f5;
-    border-radius: 4px;
+    background-color: #e9ecef;
+    border-radius: 15px;
     margin-bottom: 1rem;
+    overflow: hidden;
 }
 
 .progress-bar {
@@ -10,11 +104,28 @@
     align-items: center;
     justify-content: center;
     color: white;
-    background-color: #0d6efd;
+    background-color: var(--color-neon-pink);
+    background: linear-gradient(45deg, var(--color-neon-pink), var(--color-purple));
+    font-weight: bold;
 }
 
-.card {
-    margin-bottom: 1rem;
+/* Links */
+a {
+    color: var(--color-blue);
+    text-decoration: none;
+}
+
+a:hover {
+    color: var(--color-purple);
+}
+
+/* Utilities */
+.text-primary {
+    color: var(--color-blue) !important;
+}
+
+.bg-primary {
+    background-color: var(--color-blue) !important;
 }
 
 .btn-group {

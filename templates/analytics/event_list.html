@@ -9,6 +9,34 @@
     <a href="{% url 'analytics:event_create' %}" class="btn btn-primary">New Event</a>
 </div>
 
+<form method="get" class="mb-4">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <input type="text" name="search" class="form-control" placeholder="Search events..." value="{{ search_query }}">
+        </div>
+        <div class="col-md-3">
+            <select name="type" class="form-select">
+                <option value="">All Types</option>
+                <option value="work" {% if type_filter == 'work' %}selected{% endif %}>Work Session</option>
+                <option value="meeting" {% if type_filter == 'meeting' %}selected{% endif %}>Meeting</option>
+                <option value="study" {% if type_filter == 'study' %}selected{% endif %}>Study Session</option>
+                <option value="deadline" {% if type_filter == 'deadline' %}selected{% endif %}>Deadline</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="project" class="form-select">
+                <option value="">All Projects</option>
+                {% for project in user_projects %}
+                <option value="{{ project.id }}" {% if project_filter == project.id|stringformat:"s" %}selected{% endif %}>{{ project.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-secondary w-100">Filter</button>
+        </div>
+    </div>
+</form>
+
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
@@ -28,7 +56,10 @@
                     <td>{{ event.user.username|default:"-" }}</td>
                     <td>{{ event.start_time|date:"Y-m-d H:i:s"|default:"-" }}</td>
                     <td>
-                        <a href="{% url 'analytics:event_delete' event.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                        <div class="btn-group">
+                            <a href="{% url 'analytics:event_update' event.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <a href="{% url 'analytics:event_delete' event.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </div>
                     </td>
                 </tr>
             {% empty %}
@@ -39,4 +70,36 @@
         </tbody>
     </table>
 </div>
+
+{% if is_paginated %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">First</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 {% endblock %}

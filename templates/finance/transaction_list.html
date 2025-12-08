@@ -9,13 +9,51 @@
     <a href="{% url 'finance:transaction_create' %}" class="btn btn-primary">New Transaction</a>
 </div>
 
+<form method="get" class="mb-4">
+    <div class="row g-2 mb-2">
+        <div class="col-md-3">
+            <input type="text" name="search" class="form-control" placeholder="Search..." value="{{ search_query }}">
+        </div>
+        <div class="col-md-2">
+            <select name="type" class="form-select">
+                <option value="">All Types</option>
+                <option value="income" {% if type_filter == 'income' %}selected{% endif %}>Income</option>
+                <option value="expense" {% if type_filter == 'expense' %}selected{% endif %}>Expense</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="account" class="form-select">
+                <option value="">All Accounts</option>
+                {% for account in user_accounts %}
+                <option value="{{ account.id }}" {% if account_filter == account.id|stringformat:"s" %}selected{% endif %}>{{ account.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="project" class="form-select">
+                <option value="">All Projects</option>
+                {% for project in user_projects %}
+                <option value="{{ project.id }}" {% if project_filter == project.id|stringformat:"s" %}selected{% endif %}>{{ project.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <input type="text" name="category" class="form-control" placeholder="Category" value="{{ category_filter }}">
+        </div>
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-secondary w-100">Filter</button>
+        </div>
+    </div>
+</form>
+
 <div class="table-responsive">
     <table class="table table-striped">
         <thead>
             <tr>
                 <th>Date</th>
-                <th>Project</th>
+                <th>Account</th>
                 <th>Type</th>
+                <th>Category</th>
                 <th>Amount</th>
                 <th>Description</th>
                 <th>Actions</th>
@@ -26,15 +64,16 @@
                 <tr>
                     <td>{{ transaction.date|date }}</td>
                     <td>
-                        {% if transaction.project %}
-                            <a href="{% url 'projects:project_detail' transaction.project.pk %}">{{ transaction.project.title }}</a>
+                        {% if transaction.account %}
+                            <a href="{% url 'finance:account_detail' transaction.account.pk %}">{{ transaction.account.name }}</a>
                         {% else %}
-                            -
+                            <span class="text-muted">-</span>
                         {% endif %}
                     </td>
                     <td><span class="badge {% if transaction.t_type == 'income' %}bg-success{% else %}bg-danger{% endif %}">
                         {{ transaction.get_t_type_display }}
                     </span></td>
+                    <td>{{ transaction.category|default:"-" }}</td>
                     <td>{{ transaction.amount }} {{ transaction.currency }}</td>
                     <td>{{ transaction.description|truncatewords:10 }}</td>
                     <td>
@@ -52,4 +91,36 @@
         </tbody>
     </table>
 </div>
+
+{% if is_paginated %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">First</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+            <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
 {% endblock %}

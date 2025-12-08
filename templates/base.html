@@ -7,6 +7,7 @@
     <title>{% block title %}MyHub{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
@@ -18,10 +19,22 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav">
                     <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="{% url 'projects:project_list' %}">Projects</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="{% url 'finance:transaction_list' %}">Finance</a>
+                        <a class="nav-link" href="{% url 'tasks:task_list' %}">Tasks</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="financeDropdown" role="button" data-bs-toggle="dropdown">
+                            Finance
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="{% url 'finance:account_list' %}">Accounts</a></li>
+                            <li><a class="dropdown-item" href="{% url 'finance:transaction_list' %}">Transactions</a></li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{% url 'learning:course_list' %}">Learning</a>
