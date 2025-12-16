@@ -20,7 +20,7 @@ class TransactionForm(forms.ModelForm):
             }),
             'currency': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'USD'
+                'placeholder': 'GHS'
             }),
             't_type': forms.Select(attrs={
                 'class': 'form-select'
@@ -59,7 +59,7 @@ class AccountForm(forms.ModelForm):
             }),
             'currency': forms.TextInput(attrs={
                 'class': 'form-control',
-                'placeholder': 'USD'
+                'placeholder': 'GHS'
             }),
             'initial_balance': forms.NumberInput(attrs={
                 'class': 'form-control',

@@ -99,6 +99,7 @@ urlpatterns = [
     path('learning/', include('learning.urls')),
     path('analytics/', include('analytics.urls')),
     path('tasks/', include('tasks.urls')),
+    path('offline/', TemplateView.as_view(template_name='offline.html'), name='offline'),
 ]
 
 if settings.DEBUG:
