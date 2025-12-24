@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ object.name }}{% endblock %}
+
+{% block content %}
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <h1 class="card-title">{{ object.name }}</h1>
+                <h5 class="card-subtitle mb-2 text-muted">{{ object.get_frequency_display }} • {{ object.get_status_display }}</h5>
+            </div>
+            <div>
+                <span class="badge {% if object.status == 'active' %}bg-success{% elif object.status == 'paused' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                    {{ object.get_status_display }}
+                </span>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-6">
+                <h4>Next Payment</h4>
+                <h3 class="text-primary">{{ object.next_payment_date|date:"M d, Y" }}</h3>
+                <p class="mb-0"><strong>Amount:</strong> {{ object.amount|floatformat:2 }} {{ object.currency }}</p>
+                <p class="mb-0"><strong>Frequency:</strong> {{ object.get_frequency_display }}</p>
+                <p class="mb-0"><strong>Status:</strong> {{ object.get_status_display }}</p>
+            </div>
+            <div class="col-md-6">
+                <p><strong>Account:</strong> {{ object.account.name|default:"-" }}</p>
+                <p><strong>Project:</strong> {{ object.project.title|default:"-" }}</p>
+                <p><strong>Purpose:</strong> {{ object.purpose|default:"-" }}</p>
+                <p><strong>Notes:</strong> {{ object.notes|default:"-" }}</p>
+                <p class="text-muted">Created: {{ object.created_at|date:"M d, Y" }} • Updated: {{ object.updated_at|date:"M d, Y" }}</p>
+            </div>
+        </div>
+
+        <div class="btn-group mt-3">
+            <a href="{% url 'finance:subscription_update' object.pk %}" class="btn btn-primary">Edit Subscription</a>
+            <a href="{% url 'finance:subscription_delete' object.pk %}" class="btn btn-danger">Delete</a>
+            <a href="{% url 'finance:subscription_list' %}" class="btn btn-secondary">Back to Subscriptions</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

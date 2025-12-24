@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
@@ -17,7 +19,7 @@ class Account(models.Model):
     account_type = models.CharField(max_length=20, choices=ACCOUNT_TYPES, default='checking')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='accounts')
     currency = models.CharField(max_length=10, default='GHS')
-    initial_balance = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, help_text="Starting balance when you began tracking this account")
+    initial_balance = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), help_text="Starting balance when you began tracking this account")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_active = models.BooleanField(default=True)
@@ -96,3 +98,42 @@ class Transaction(models.Model):
             return cls.INCOME_CATEGORIES
         else:
             return cls.EXPENSE_CATEGORIES
+
+
+class Subscription(models.Model):
+    FREQUENCY_CHOICES = (
+        ('weekly', 'Weekly'),
+        ('monthly', 'Monthly'),
+        ('quarterly', 'Quarterly'),
+        ('yearly', 'Yearly'),
+        ('custom', 'Custom'),
+    )
+
+    STATUS_CHOICES = (
+        ('active', 'Active'),
+        ('paused', 'Paused'),
+        ('canceled', 'Canceled'),
+    )
+
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='subscriptions')
+    account = models.ForeignKey(Account, on_delete=models.SET_NULL, null=True, blank=True, related_name='subscriptions')
+    project = models.ForeignKey('projects.Project', on_delete=models.SET_NULL, null=True, blank=True, related_name='subscriptions')
+    name = models.CharField(max_length=255)
+    purpose = models.TextField(blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    currency = models.CharField(max_length=10, default='GHS')
+    next_payment_date = models.DateField()
+    frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES, default='monthly')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['next_payment_date', 'name']
+
+    def __str__(self):
+        return f"{self.name} - {self.amount} {self.currency}"
+
+    def get_absolute_url(self):
+        return reverse('finance:subscription_detail', kwargs={'pk': self.pk})

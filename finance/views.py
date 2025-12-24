@@ -1,11 +1,13 @@
+from typing import Any, cast
+
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views import generic
 from django.db.models import Q, Sum
 from django import forms
 
-from .models import Transaction, Account
-from .forms import TransactionForm, AccountForm
+from .models import Transaction, Account, Subscription
+from .forms import TransactionForm, AccountForm, SubscriptionForm
 
 
 class TransactionListView(LoginRequiredMixin, generic.ListView):
@@ -44,13 +46,14 @@ class TransactionListView(LoginRequiredMixin, generic.ListView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        user = cast(Any, self.request.user)
         context['search_query'] = self.request.GET.get('search', '')
         context['type_filter'] = self.request.GET.get('type', '')
         context['project_filter'] = self.request.GET.get('project', '')
         context['account_filter'] = self.request.GET.get('account', '')
         context['category_filter'] = self.request.GET.get('category', '')
-        context['user_projects'] = self.request.user.projects.all()
-        context['user_accounts'] = self.request.user.accounts.filter(is_active=True)
+        context['user_projects'] = user.projects.all()
+        context['user_accounts'] = user.accounts.filter(is_active=True)
         return context
 
 
@@ -61,9 +64,12 @@ class TransactionCreateView(LoginRequiredMixin, generic.CreateView):
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
+        user = cast(Any, self.request.user)
         # Only show projects and accounts owned by the current user
-        form.fields['project'].queryset = self.request.user.projects.all()
-        form.fields['account'].queryset = self.request.user.accounts.filter(is_active=True)
+        project_field = cast(forms.ModelChoiceField, form.fields['project'])
+        account_field = cast(forms.ModelChoiceField, form.fields['account'])
+        project_field.queryset = user.projects.all()
+        account_field.queryset = user.accounts.filter(is_active=True)
 
         # Update category choices based on transaction type if form has data
         if self.request.POST:
@@ -86,9 +92,12 @@ class TransactionUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.Upd
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
+        user = cast(Any, self.request.user)
         # Only show projects and accounts owned by the current user
-        form.fields['project'].queryset = self.request.user.projects.all()
-        form.fields['account'].queryset = self.request.user.accounts.filter(is_active=True)
+        project_field = cast(forms.ModelChoiceField, form.fields['project'])
+        account_field = cast(forms.ModelChoiceField, form.fields['account'])
+        project_field.queryset = user.projects.all()
+        account_field.queryset = user.accounts.filter(is_active=True)
 
         # Update category choices based on transaction type
         if self.request.POST:
@@ -183,3 +192,112 @@ class AccountDeleteView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteV
     def test_func(self):
         account = self.get_object()
         return account.user == self.request.user
+
+
+# Subscription Views
+
+class SubscriptionListView(LoginRequiredMixin, generic.ListView):
+    model = Subscription
+    template_name = 'finance/subscription_list.html'
+    paginate_by = 20
+    context_object_name = 'subscriptions'
+
+    def get_queryset(self):
+        queryset = Subscription.objects.filter(user=self.request.user).select_related('account', 'project')
+        search_query = self.request.GET.get('search', '')
+        status_filter = self.request.GET.get('status', '')
+        account_filter = self.request.GET.get('account', '')
+        project_filter = self.request.GET.get('project', '')
+        frequency_filter = self.request.GET.get('frequency', '')
+
+        if search_query:
+            queryset = queryset.filter(
+                Q(name__icontains=search_query) |
+                Q(purpose__icontains=search_query) |
+                Q(notes__icontains=search_query)
+            )
+
+        if status_filter:
+            queryset = queryset.filter(status=status_filter)
+
+        if account_filter:
+            queryset = queryset.filter(account_id=account_filter)
+
+        if project_filter:
+            queryset = queryset.filter(project_id=project_filter)
+
+        if frequency_filter:
+            queryset = queryset.filter(frequency=frequency_filter)
+
+        return queryset.order_by('next_payment_date', 'name')
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['search_query'] = self.request.GET.get('search', '')
+        context['status_filter'] = self.request.GET.get('status', '')
+        context['account_filter'] = self.request.GET.get('account', '')
+        context['project_filter'] = self.request.GET.get('project', '')
+        context['frequency_filter'] = self.request.GET.get('frequency', '')
+        user = cast(Any, self.request.user)
+        context['user_accounts'] = user.accounts.filter(is_active=True)
+        context['user_projects'] = user.projects.all()
+        context['frequency_choices'] = Subscription.FREQUENCY_CHOICES
+        context['status_choices'] = Subscription.STATUS_CHOICES
+        return context
+
+
+class SubscriptionDetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+    model = Subscription
+    template_name = 'finance/subscription_detail.html'
+
+    def test_func(self):
+        subscription = self.get_object()
+        return subscription.user == self.request.user
+
+
+class SubscriptionCreateView(LoginRequiredMixin, generic.CreateView):
+    model = Subscription
+    form_class = SubscriptionForm
+    template_name = 'finance/subscription_form.html'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        user = cast(Any, self.request.user)
+        account_field = cast(forms.ModelChoiceField, form.fields['account'])
+        project_field = cast(forms.ModelChoiceField, form.fields['project'])
+        account_field.queryset = user.accounts.filter(is_active=True)
+        project_field.queryset = user.projects.all()
+        return form
+
+    def form_valid(self, form):
+        form.instance.user = self.request.user
+        return super().form_valid(form)
+
+
+class SubscriptionUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
+    model = Subscription
+    form_class = SubscriptionForm
+    template_name = 'finance/subscription_form.html'
+
+    def get_form(self, form_class=None):
+        form = super().get_form(form_class)
+        user = cast(Any, self.request.user)
+        account_field = cast(forms.ModelChoiceField, form.fields['account'])
+        project_field = cast(forms.ModelChoiceField, form.fields['project'])
+        account_field.queryset = user.accounts.filter(is_active=True)
+        project_field.queryset = user.projects.all()
+        return form
+
+    def test_func(self):
+        subscription = self.get_object()
+        return subscription.user == self.request.user
+
+
+class SubscriptionDeleteView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
+    model = Subscription
+    success_url = reverse_lazy('finance:subscription_list')
+    template_name = 'finance/subscription_confirm_delete.html'
+
+    def test_func(self):
+        subscription = self.get_object()
+        return subscription.user == self.request.user

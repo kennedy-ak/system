@@ -9,6 +9,11 @@ from .views import (
     AccountCreateView,
     AccountUpdateView,
     AccountDeleteView,
+    SubscriptionListView,
+    SubscriptionDetailView,
+    SubscriptionCreateView,
+    SubscriptionUpdateView,
+    SubscriptionDeleteView,
 )
 
 app_name = 'finance'
@@ -26,4 +31,11 @@ urlpatterns = [
     path('accounts/<int:pk>/', AccountDetailView.as_view(), name='account_detail'),
     path('accounts/<int:pk>/edit/', AccountUpdateView.as_view(), name='account_update'),
     path('accounts/<int:pk>/delete/', AccountDeleteView.as_view(), name='account_delete'),
+
+    # Subscription URLs
+    path('subscriptions/', SubscriptionListView.as_view(), name='subscription_list'),
+    path('subscriptions/create/', SubscriptionCreateView.as_view(), name='subscription_create'),
+    path('subscriptions/<int:pk>/', SubscriptionDetailView.as_view(), name='subscription_detail'),
+    path('subscriptions/<int:pk>/edit/', SubscriptionUpdateView.as_view(), name='subscription_update'),
+    path('subscriptions/<int:pk>/delete/', SubscriptionDeleteView.as_view(), name='subscription_delete'),
 ]

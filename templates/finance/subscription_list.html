@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Subscriptions{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Subscriptions</h1>
+    <a href="{% url 'finance:subscription_create' %}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> New Subscription
+    </a>
+</div>
+
+<form method="get" class="mb-4">
+    <div class="row g-2 mb-2">
+        <div class="col-md-3">
+            <input type="text" name="search" class="form-control" placeholder="Search by name or notes" value="{{ search_query }}">
+        </div>
+        <div class="col-md-2">
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                {% for key,label in status_choices %}
+                    <option value="{{ key }}" {% if status_filter == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="frequency" class="form-select">
+                <option value="">All Frequencies</option>
+                {% for key,label in frequency_choices %}
+                    <option value="{{ key }}" {% if frequency_filter == key %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="account" class="form-select">
+                <option value="">All Accounts</option>
+                {% for account in user_accounts %}
+                    <option value="{{ account.id }}" {% if account_filter == account.id|stringformat:"s" %}selected{% endif %}>{{ account.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <select name="project" class="form-select">
+                <option value="">All Projects</option>
+                {% for project in user_projects %}
+                    <option value="{{ project.id }}" {% if project_filter == project.id|stringformat:"s" %}selected{% endif %}>{{ project.title }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-1">
+            <button type="submit" class="btn btn-secondary w-100">Filter</button>
+        </div>
+    </div>
+</form>
+
+<div class="table-responsive">
+    <table class="table table-striped align-middle">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Next Payment</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Frequency</th>
+                <th>Account</th>
+                <th>Project</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for subscription in subscriptions %}
+                <tr>
+                    <td>
+                        <a href="{% url 'finance:subscription_detail' subscription.pk %}">{{ subscription.name }}</a>
+                        <div class="text-muted small">{{ subscription.purpose|default:"No description" }}</div>
+                    </td>
+                    <td>{{ subscription.next_payment_date|date:"M d, Y" }}</td>
+                    <td>{{ subscription.amount|floatformat:2 }} {{ subscription.currency }}</td>
+                    <td>
+                        <span class="badge {% if subscription.status == 'active' %}bg-success{% elif subscription.status == 'paused' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                            {{ subscription.get_status_display }}
+                        </span>
+                    </td>
+                    <td>{{ subscription.get_frequency_display }}</td>
+                    <td>{{ subscription.account.name|default:"-" }}</td>
+                    <td>{{ subscription.project.title|default:"-" }}</td>
+                    <td>
+                        <div class="btn-group">
+                            <a href="{% url 'finance:subscription_update' subscription.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <a href="{% url 'finance:subscription_delete' subscription.pk %}" class="btn btn-sm btn-outline-danger">Delete</a>
+                        </div>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="8">No subscriptions yet. <a href="{% url 'finance:subscription_create' %}">Create one</a> to start tracking recurring payments.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% if is_paginated %}
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page=1">First</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item"><a class="page-link" href="?page={{ num }}">{{ num }}</a></li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">Last</a></li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+{% endblock %}
