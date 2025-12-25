@@ -24,6 +24,10 @@ class Task(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='medium')
     deadline = models.DateTimeField(null=True, blank=True)
+    reminder_minutes_before = models.PositiveIntegerField(
+        default=120,
+        help_text='Minutes before deadline to send SMS reminder'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     completed_at = models.DateTimeField(null=True, blank=True)

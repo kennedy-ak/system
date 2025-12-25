@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
 from pathlib import Path
+from typing import cast
 from decouple import config, Csv
 import dj_database_url
 
@@ -41,13 +42,16 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-      # Custom apps
+    # Third-party apps
+    'django_celery_beat',
+    # Custom apps
     'accounts',
     'projects',
     'finance',
     'learning',
     'analytics',
     'tasks',
+    'notifications',
 ]
 
 MIDDLEWARE = [
@@ -85,9 +89,11 @@ WSGI_APPLICATION = 'myhub.wsgi.application'
 
 # Database Configuration
 # Use DATABASE_URL from environment variable, fallback to SQLite for development
+DB_DEFAULT_URL = f'sqlite:///{BASE_DIR / "db.sqlite3"}'
+DATABASE_URL = cast(str, config('DATABASE_URL', default=DB_DEFAULT_URL))
 DATABASES = {
     'default': dj_database_url.config(
-        default=config('DATABASE_URL', default=f'sqlite:///{BASE_DIR / "db.sqlite3"}'),
+        default=DATABASE_URL,
         conn_max_age=600,
         conn_health_checks=True,
     )
@@ -145,6 +151,11 @@ else:
     # Cache static files for 1 year in production
     STATIC_CACHE_TIMEOUT = 31536000
 
+# SMS Provider (mNotify)
+MNOTIFY_API_KEY = config('MNOTIFY_API_KEY', default='')
+MNOTIFY_SENDER_ID = config('MNOTIFY_SENDER_ID', default='')
+MNOTIFY_SMS_URL = config('MNOTIFY_SMS_URL', default='https://apps.mnotify.net/smsapi')
+
 # Security headers for PWA
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_BROWSER_XSS_FILTER = True
@@ -158,6 +169,35 @@ CSP_IMG_SRC = ("'self'", "data:", "https:")
 CSP_FONT_SRC = ("'self'", "https://cdn.jsdelivr.net")
 CSP_CONNECT_SRC = ("'self'",)
 CSP_MANIFEST_SRC = ("'self'",)
+
+# Reminder defaults
+SUBSCRIPTION_REMINDER_DAYS_BEFORE = config('SUBSCRIPTION_REMINDER_DAYS_BEFORE', cast=int, default=2)
+TASK_REMINDER_MINUTES_BEFORE = config('TASK_REMINDER_MINUTES_BEFORE', cast=int, default=120)
+
+# Celery Configuration
+CELERY_BROKER_URL = config('CELERY_BROKER_URL', default='redis://localhost:6379/0')
+CELERY_RESULT_BACKEND = config('CELERY_RESULT_BACKEND', default='redis://localhost:6379/0')
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+CELERY_ENABLE_UTC = True
+
+# Force Django to use pytz for django-celery-beat compatibility
+USE_DEPRECATED_PYTZ = True
+
+# Celery Beat Schedule - Run reminder checks every 15 minutes
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'send-all-reminders-every-15-minutes': {
+        'task': 'notifications.send_all_reminders',
+        'schedule': crontab(minute='*/15'),  # Every 15 minutes
+    },
+}
+
+# Store Celery Beat schedule in database
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field

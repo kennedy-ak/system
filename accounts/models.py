@@ -40,6 +40,11 @@ class UserProfile(models.Model):
 	"""Simple profile extension for built-in User."""
 	user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 	bio = models.TextField(blank=True)
+	phone_number = models.CharField(
+		max_length=20,
+		blank=True,
+		help_text='E.164 format recommended, e.g., +233XXXXXXXXX'
+	)
 	avatar = models.ImageField(
 		upload_to='avatars/',
 		null=True,

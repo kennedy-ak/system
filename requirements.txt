@@ -1,6 +1,7 @@
 django
 python-decouple
 Pillow
+requests
 
 # PostgreSQL Database
 psycopg2-binary

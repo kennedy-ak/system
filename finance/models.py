@@ -125,6 +125,7 @@ class Subscription(models.Model):
     next_payment_date = models.DateField()
     frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES, default='monthly')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    reminder_days_before = models.PositiveIntegerField(default=2, help_text="Days before next payment to send reminder SMS")
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

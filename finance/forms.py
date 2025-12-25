@@ -92,6 +92,7 @@ class SubscriptionForm(forms.ModelForm):
             'next_payment_date',
             'frequency',
             'status',
+            'reminder_days_before',
             'notes',
         ]
         widgets = {
@@ -129,6 +130,12 @@ class SubscriptionForm(forms.ModelForm):
             'status': forms.Select(attrs={
                 'class': 'form-select'
             }),
+            'reminder_days_before': forms.NumberInput(attrs={
+                'class': 'form-control',
+                'min': 0,
+                'step': 1,
+                'placeholder': 'Days before next payment'
+            }),
             'notes': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 3,
@@ -145,5 +152,6 @@ class SubscriptionForm(forms.ModelForm):
             'next_payment_date': 'Next Payment Date',
             'frequency': 'Frequency',
             'status': 'Status',
+            'reminder_days_before': 'Reminder (days before)',
             'notes': 'Notes (Optional)',
         }

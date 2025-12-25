@@ -12,8 +12,8 @@ body {
 
 /* Navbar Customization */
 .navbar {
-    background-color: var(--color-grape) !important;
-    background: linear-gradient(to right, var(--color-grape), var(--color-purple));
+    background-color: #212529 !important;
+    background: #212529 !important;
 }
 
 .navbar-brand {
@@ -27,7 +27,7 @@ body {
 }
 
 .nav-link:hover {
-    color: var(--color-sky-blue) !important;
+    color: white !important;
 }
 
 /* Buttons */
@@ -85,9 +85,10 @@ body {
 }
 
 .card-header {
-    background-color: var(--color-blue);
-    color: white;
-    border-bottom: none;
+    background-color: #f8f9fa;
+    color: #212529;
+    border-bottom: 1px solid rgba(0,0,0,0.125);
+    font-weight: 600;
 }
 
 /* Progress Bars */
