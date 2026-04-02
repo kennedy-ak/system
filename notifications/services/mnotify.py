@@ -1,5 +1,8 @@
 import requests
+import logging
 from typing import Tuple, Dict, Any
+
+logger = logging.getLogger(__name__)
 
 
 def send_sms(
@@ -25,11 +28,30 @@ def send_sms(
     }
 
     if dry_run:
+        logger.info(f"SMS dry run: {to_number} - {message[:50]}...")
         return True, {"dry_run": True, "payload": payload}
 
     try:
         resp = requests.post(sms_url, data=payload, timeout=timeout)
         ok = resp.status_code == 200 and "1000" in resp.text
+
+        if ok:
+            logger.info(f"SMS sent successfully to {to_number}")
+        else:
+            logger.warning(
+                f"SMS failed for {to_number}: status={resp.status_code}, response={resp.text[:100]}"
+            )
+
         return ok, {"status_code": resp.status_code, "text": resp.text, "payload": payload}
-    except Exception as exc:
+
+    except requests.Timeout as exc:
+        logger.error(f"SMS timeout for {to_number}: {exc}")
+        return False, {"error": "Request timeout", "payload": payload}
+
+    except requests.ConnectionError as exc:
+        logger.error(f"SMS connection error for {to_number}: {exc}")
+        return False, {"error": "Connection error", "payload": payload}
+
+    except requests.RequestException as exc:
+        logger.error(f"SMS request error for {to_number}: {exc}")
         return False, {"error": str(exc), "payload": payload}

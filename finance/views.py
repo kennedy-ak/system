@@ -1,11 +1,13 @@
 from typing import Any, cast
 
 from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 from django.db.models import Q, Sum
 from django import forms
+from django.contrib import messages
 
+from myhub.mixins import UserIsOwnerMixin, SuccessMessageMixin
 from .models import Transaction, Account, Subscription
 from .forms import TransactionForm, AccountForm, SubscriptionForm
 
@@ -57,10 +59,11 @@ class TransactionListView(LoginRequiredMixin, generic.ListView):
         return context
 
 
-class TransactionCreateView(LoginRequiredMixin, generic.CreateView):
+class TransactionCreateView(LoginRequiredMixin, SuccessMessageMixin, generic.CreateView):
     model = Transaction
     form_class = TransactionForm
     template_name = 'finance/transaction_form.html'
+    success_message = "Transaction created successfully."
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -85,10 +88,11 @@ class TransactionCreateView(LoginRequiredMixin, generic.CreateView):
         return super().form_valid(form)
 
 
-class TransactionUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
+class TransactionUpdateView(LoginRequiredMixin, UserIsOwnerMixin, SuccessMessageMixin, generic.UpdateView):
     model = Transaction
     form_class = TransactionForm
     template_name = 'finance/transaction_form.html'
+    success_message = "Transaction updated successfully."
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -111,19 +115,12 @@ class TransactionUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.Upd
 
         return form
 
-    def test_func(self):
-        transaction = self.get_object()
-        return transaction.user == self.request.user
 
-
-class TransactionDeleteView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
+class TransactionDeleteView(LoginRequiredMixin, UserIsOwnerMixin, SuccessMessageMixin, generic.DeleteView):
     model = Transaction
     success_url = reverse_lazy('finance:transaction_list')
     template_name = 'finance/transaction_confirm_delete.html'
-
-    def test_func(self):
-        transaction = self.get_object()
-        return transaction.user == self.request.user
+    success_message = "Transaction deleted successfully."
 
 
 # Account Views
@@ -144,16 +141,12 @@ class AccountListView(LoginRequiredMixin, generic.ListView):
         return context
 
 
-class AccountDetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+class AccountDetailView(LoginRequiredMixin, UserIsOwnerMixin, generic.DetailView):
     model = Account
     template_name = 'finance/account_detail.html'
 
     def get_queryset(self):
         return Account.objects.prefetch_related('transactions')
-
-    def test_func(self):
-        account = self.get_object()
-        return account.user == self.request.user
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -164,34 +157,29 @@ class AccountDetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailV
         return context
 
 
-class AccountCreateView(LoginRequiredMixin, generic.CreateView):
+class AccountCreateView(LoginRequiredMixin, SuccessMessageMixin, generic.CreateView):
     model = Account
     form_class = AccountForm
     template_name = 'finance/account_form.html'
+    success_message = "Account created successfully."
 
     def form_valid(self, form):
         form.instance.user = self.request.user
         return super().form_valid(form)
 
 
-class AccountUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
+class AccountUpdateView(LoginRequiredMixin, UserIsOwnerMixin, SuccessMessageMixin, generic.UpdateView):
     model = Account
     form_class = AccountForm
     template_name = 'finance/account_form.html'
-
-    def test_func(self):
-        account = self.get_object()
-        return account.user == self.request.user
+    success_message = "Account updated successfully."
 
 
-class AccountDeleteView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
+class AccountDeleteView(LoginRequiredMixin, UserIsOwnerMixin, SuccessMessageMixin, generic.DeleteView):
     model = Account
     success_url = reverse_lazy('finance:account_list')
     template_name = 'finance/account_confirm_delete.html'
-
-    def test_func(self):
-        account = self.get_object()
-        return account.user == self.request.user
+    success_message = "Account deleted successfully."
 
 
 # Subscription Views
@@ -246,19 +234,16 @@ class SubscriptionListView(LoginRequiredMixin, generic.ListView):
         return context
 
 
-class SubscriptionDetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+class SubscriptionDetailView(LoginRequiredMixin, UserIsOwnerMixin, generic.DetailView):
     model = Subscription
     template_name = 'finance/subscription_detail.html'
 
-    def test_func(self):
-        subscription = self.get_object()
-        return subscription.user == self.request.user
 
-
-class SubscriptionCreateView(LoginRequiredMixin, generic.CreateView):
+class SubscriptionCreateView(LoginRequiredMixin, SuccessMessageMixin, generic.CreateView):
     model = Subscription
     form_class = SubscriptionForm
     template_name = 'finance/subscription_form.html'
+    success_message = "Subscription created successfully."
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -274,10 +259,11 @@ class SubscriptionCreateView(LoginRequiredMixin, generic.CreateView):
         return super().form_valid(form)
 
 
-class SubscriptionUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
+class SubscriptionUpdateView(LoginRequiredMixin, UserIsOwnerMixin, SuccessMessageMixin, generic.UpdateView):
     model = Subscription
     form_class = SubscriptionForm
     template_name = 'finance/subscription_form.html'
+    success_message = "Subscription updated successfully."
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -288,16 +274,9 @@ class SubscriptionUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.Up
         project_field.queryset = user.projects.all()
         return form
 
-    def test_func(self):
-        subscription = self.get_object()
-        return subscription.user == self.request.user
 
-
-class SubscriptionDeleteView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
+class SubscriptionDeleteView(LoginRequiredMixin, UserIsOwnerMixin, SuccessMessageMixin, generic.DeleteView):
     model = Subscription
     success_url = reverse_lazy('finance:subscription_list')
     template_name = 'finance/subscription_confirm_delete.html'
-
-    def test_func(self):
-        subscription = self.get_object()
-        return subscription.user == self.request.user
+    success_message = "Subscription deleted successfully."

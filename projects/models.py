@@ -17,6 +17,13 @@ class Project(models.Model):
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['owner', 'status']),
+            models.Index(fields=['owner', '-created_at']),
+        ]
         
     def get_absolute_url(self):
         return reverse('projects:project_detail', kwargs={'pk': self.pk})

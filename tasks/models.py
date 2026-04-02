@@ -28,12 +28,22 @@ class Task(models.Model):
         default=120,
         help_text='Minutes before deadline to send SMS reminder'
     )
+    enable_reminders = models.BooleanField(
+        default=True,
+        help_text='Enable SMS reminders for this task'
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     completed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['user', 'status']),
+            models.Index(fields=['user', 'priority']),
+            models.Index(fields=['user', 'deadline']),
+            models.Index(fields=['user', '-created_at']),
+        ]
 
     def __str__(self):
         return self.title

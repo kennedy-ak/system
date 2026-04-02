@@ -39,11 +39,12 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         from finance.models import Account, Transaction
         from learning.models import Course
         from analytics.models import Event
+        from worklogs.models import WorkLog
 
         # Projects data
         context['total_projects'] = Project.objects.filter(owner=user).count()
         context['ongoing_projects'] = Project.objects.filter(owner=user, status='ongoing').count()
-        context['recent_projects'] = Project.objects.filter(owner=user).order_by('-created_at')[:5]
+        context['recent_projects'] = Project.objects.filter(owner=user).select_related('owner').order_by('-created_at')[:5]
 
         # Tasks data
         context['pending_tasks'] = Task.objects.filter(user=user, status='pending').count()
@@ -56,15 +57,18 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             user=user,
             status__in=['pending', 'in_progress'],
             deadline__isnull=False
-        ).order_by('deadline')[:5]
+        ).select_related('project').order_by('deadline')[:5]
 
-        # Finance data
-        accounts = Account.objects.filter(user=user, is_active=True)
+        # Finance data - optimize with prefetch
+        accounts = Account.objects.filter(user=user, is_active=True).prefetch_related('transactions')
         context['total_accounts'] = accounts.count()
-        context['total_balance'] = sum(acc.current_balance() for acc in accounts)
+        total_balance = sum(acc.current_balance() for acc in accounts)
+        context['total_balance'] = total_balance
 
         # Recent transactions
-        context['recent_transactions'] = Transaction.objects.filter(user=user).select_related('account').order_by('-date')[:10]
+        context['recent_transactions'] = Transaction.objects.filter(
+            user=user
+        ).select_related('account', 'project').order_by('-date')[:10]
 
         # Monthly income/expense
         thirty_days_ago = timezone.now().date() - timedelta(days=30)
@@ -81,11 +85,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         # Learning data
         context['total_courses'] = Course.objects.filter(owner=user).count()
         context['courses_in_progress'] = Course.objects.filter(owner=user, progress__lt=100).count()
-        context['recent_courses'] = Course.objects.filter(owner=user).order_by('-created_at')[:5]
+        context['recent_courses'] = Course.objects.filter(owner=user).select_related('owner').order_by('-created_at')[:5]
 
         # Analytics data
         context['total_events'] = Event.objects.filter(user=user).count()
         context['recent_events'] = Event.objects.filter(user=user).select_related('project').order_by('-start_time')[:5]
+
+        # Work logs data
+        context['total_worklogs'] = WorkLog.objects.filter(user=user).count()
+        context['completed_worklogs'] = WorkLog.objects.filter(user=user, status='completed').count()
+        context['in_progress_worklogs'] = WorkLog.objects.filter(user=user, status='in_progress').count()
+        context['recent_worklogs'] = WorkLog.objects.filter(user=user).select_related('project', 'task').order_by('-created_at')[:5]
 
         return context
 
@@ -99,6 +109,7 @@ urlpatterns = [
     path('learning/', include('learning.urls')),
     path('analytics/', include('analytics.urls')),
     path('tasks/', include('tasks.urls')),
+    path('worklogs/', include('worklogs.urls')),
     path('offline/', TemplateView.as_view(template_name='offline.html'), name='offline'),
 ]
 

@@ -1,8 +1,10 @@
 from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 from django.db.models import Q
+from django.contrib import messages
 
+from myhub.mixins import UserIsOwnerMixin, SuccessMessageMixin
 from .models import Course
 from .forms import CourseForm
 
@@ -30,31 +32,31 @@ class CourseListView(LoginRequiredMixin, generic.ListView):
         return context
 
 
-class CourseCreateView(LoginRequiredMixin, generic.CreateView):
+class CourseDetailView(LoginRequiredMixin, UserIsOwnerMixin, generic.DetailView):
+    model = Course
+    template_name = 'learning/course_detail.html'
+
+
+class CourseCreateView(LoginRequiredMixin, SuccessMessageMixin, generic.CreateView):
     model = Course
     form_class = CourseForm
     template_name = 'learning/course_form.html'
+    success_message = "Course created successfully."
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
         return super().form_valid(form)
 
 
-class CourseUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
+class CourseUpdateView(LoginRequiredMixin, UserIsOwnerMixin, SuccessMessageMixin, generic.UpdateView):
     model = Course
     form_class = CourseForm
     template_name = 'learning/course_form.html'
-
-    def test_func(self):
-        course = self.get_object()
-        return course.owner == self.request.user
+    success_message = "Course updated successfully."
 
 
-class CourseDeleteView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
+class CourseDeleteView(LoginRequiredMixin, UserIsOwnerMixin, SuccessMessageMixin, generic.DeleteView):
     model = Course
     success_url = reverse_lazy('learning:course_list')
     template_name = 'learning/course_confirm_delete.html'
-
-    def test_func(self):
-        course = self.get_object()
-        return course.owner == self.request.user
+    success_message = "Course deleted successfully."

@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'analytics',
     'tasks',
     'notifications',
+    'worklogs',
 ]
 
 MIDDLEWARE = [

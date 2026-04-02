@@ -52,6 +52,11 @@ class UserProfile(models.Model):
 		validators=[validate_image],
 		help_text='Upload a profile picture (JPEG, PNG, GIF, BMP, WEBP). Minimum 50x50px, maximum 10MB.'
 	)
+	default_currency = models.CharField(
+		max_length=10,
+		default='GHS',
+		help_text='Default currency for new transactions and subscriptions'
+	)
 
 	def __str__(self):
 		return f"Profile: {self.user.username}"

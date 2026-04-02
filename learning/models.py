@@ -12,6 +12,12 @@ class Course(models.Model):
 
     def __str__(self):
         return self.title
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['owner', 'progress']),
+        ]
         
     def get_absolute_url(self):
         return reverse('learning:course_list')

@@ -4,14 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    
+
     <!-- Primary Meta Tags -->
     <title>{% block title %}MyHub - Project Management Hub{% endblock %}</title>
     <meta name="title" content="MyHub - Project Management Hub">
     <meta name="description" content="A comprehensive project management and organization hub for projects, tasks, finance, learning, and analytics.">
     <meta name="keywords" content="project management, productivity, finance, learning, tasks, analytics">
     <meta name="author" content="MyHub">
-    
+
     <!-- PWA Meta Tags -->
     <meta name="application-name" content="MyHub">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,253 +20,276 @@
     <meta name="format-detection" content="telephone=no">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="msapplication-config" content="{% static 'browserconfig.xml' %}">
-    <meta name="msapplication-TileColor" content="#212529">
+    <meta name="msapplication-TileColor" content="#1c1f26">
     <meta name="msapplication-tap-highlight" content="no">
-    
+
     <!-- Theme Colors -->
-    <meta name="theme-color" content="#212529">
-    <meta name="msapplication-navbutton-color" content="#212529">
+    <meta name="theme-color" content="#1c1f26">
+    <meta name="msapplication-navbutton-color" content="#1c1f26">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    
+
     <!-- Icons and Manifest -->
     <link rel="manifest" href="{% static 'manifest.json' %}">
     <link rel="icon" type="image/png" sizes="32x32" href="{% static 'icons/icon-32x32.png' %}">
     <link rel="icon" type="image/png" sizes="16x16" href="{% static 'icons/icon-16x16.png' %}">
     <link rel="apple-touch-icon" sizes="180x180" href="{% static 'icons/apple-touch-icon.png' %}">
-    <link rel="mask-icon" href="{% static 'icons/safari-pinned-tab.svg' %}" color="#212529">
-    
+    <link rel="mask-icon" href="{% static 'icons/safari-pinned-tab.svg' %}" color="#1c1f26">
+
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://system.digitalrepublic.space/">
     <meta property="og:title" content="MyHub - Project Management Hub">
     <meta property="og:description" content="A comprehensive project management and organization hub for projects, tasks, finance, learning, and analytics.">
     <meta property="og:image" content="{% static 'icons/og-image.png' %}">
-    
+
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://system.digitalrepublic.space/">
     <meta property="twitter:title" content="MyHub - Project Management Hub">
     <meta property="twitter:description" content="A comprehensive project management and organization hub for projects, tasks, finance, learning, and analytics.">
     <meta property="twitter:image" content="{% static 'icons/og-image.png' %}">
-    
+
     <!-- Stylesheets -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'projects:project_list' %}">MyHub</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'home' %}">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'projects:project_list' %}">Projects</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'tasks:task_list' %}">Tasks</a>
-                    </li>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="financeDropdown" role="button" data-bs-toggle="dropdown">
-                            Finance
-                        </a>
-                        <ul class="dropdown-menu">
-                            <li><a class="dropdown-item" href="{% url 'finance:account_list' %}">Accounts</a></li>
-                            <li><a class="dropdown-item" href="{% url 'finance:transaction_list' %}">Transactions</a></li>
-                            <li><a class="dropdown-item" href="{% url 'finance:subscription_list' %}">Subscriptions</a></li>
-                        </ul>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'learning:course_list' %}">Learning</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'analytics:event_list' %}">Analytics</a>
-                    </li>
-                </ul>
-                <ul class="navbar-nav ms-auto">
-                    {% if user.is_authenticated %}
-                        <li class="nav-item">
-                            <button id="pwa-install-btn" class="btn btn-warning btn-sm me-2" style="display: none;">
-                                <i class="bi bi-download"></i> Install App
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <span class="nav-link">{{ user.username }}</span>
-                        </li>
-                        <li class="nav-item">
-                            <form method="post" action="{% url 'logout' %}" style="display: inline;">
-                                {% csrf_token %}
-                                <button type="submit" class="btn nav-link" style="border: none; background: none; cursor: pointer;">Logout</button>
-                            </form>
-                        </li>
-                    {% else %}
-                        <li class="nav-item">
-                            <button id="pwa-install-btn" class="btn btn-warning btn-sm me-2" style="display: none;">
-                                <i class="bi bi-download"></i> Install App
-                            </button>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">Login</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{% url 'accounts:register' %}">Register</a>
-                        </li>
-                    {% endif %}
-                </ul>
-            </div>
+<body class="{% if user.is_authenticated %}has-sidebar{% endif %}">
+
+{% if user.is_authenticated %}
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="sidebar" id="sidebar">
+
+        <!-- Brand -->
+        <div class="sidebar-brand">
+            <a href="{% url 'home' %}">
+                <i class="bi bi-grid-3x3-gap-fill"></i>
+                <span>MyHub</span>
+            </a>
         </div>
+
+        <!-- Navigation -->
+        <nav class="sidebar-nav">
+
+            <a href="{% url 'home' %}" class="sidebar-link {% if request.path == '/' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+
+            <div class="sidebar-section">Work</div>
+
+            <a href="{% url 'projects:project_list' %}" class="sidebar-link {% if '/projects/' in request.path %}active{% endif %}">
+                <i class="bi bi-folder2"></i>
+                <span>Projects</span>
+            </a>
+
+            <a href="{% url 'tasks:task_list' %}" class="sidebar-link {% if '/tasks/' in request.path %}active{% endif %}">
+                <i class="bi bi-check2-square"></i>
+                <span>Tasks</span>
+            </a>
+
+            <a href="{% url 'worklogs:worklog_list' %}" class="sidebar-link {% if '/worklogs/' in request.path %}active{% endif %}">
+                <i class="bi bi-journal-text"></i>
+                <span>Work Logs</span>
+            </a>
+
+            <div class="sidebar-section">Finance</div>
+
+            <a class="sidebar-link sidebar-dropdown-toggle {% if '/finance/' in request.path %}active{% endif %}"
+               data-bs-toggle="collapse" href="#financeMenu" role="button"
+               aria-expanded="{% if '/finance/' in request.path %}true{% else %}false{% endif %}">
+                <i class="bi bi-wallet2"></i>
+                <span>Finance</span>
+                <i class="bi bi-chevron-right sidebar-chevron ms-auto"></i>
+            </a>
+            <div class="collapse {% if '/finance/' in request.path %}show{% endif %}" id="financeMenu">
+                <div class="sidebar-submenu">
+                    <a href="{% url 'finance:account_list' %}" class="sidebar-link sidebar-sub-link">
+                        <i class="bi bi-bank2"></i>
+                        <span>Accounts</span>
+                    </a>
+                    <a href="{% url 'finance:transaction_list' %}" class="sidebar-link sidebar-sub-link">
+                        <i class="bi bi-cash-stack"></i>
+                        <span>Transactions</span>
+                    </a>
+                    <a href="{% url 'finance:subscription_list' %}" class="sidebar-link sidebar-sub-link">
+                        <i class="bi bi-arrow-repeat"></i>
+                        <span>Subscriptions</span>
+                    </a>
+                </div>
+            </div>
+
+            <div class="sidebar-section">Growth</div>
+
+            <a href="{% url 'learning:course_list' %}" class="sidebar-link {% if '/learning/' in request.path %}active{% endif %}">
+                <i class="bi bi-book"></i>
+                <span>Learning</span>
+            </a>
+
+            <a href="{% url 'analytics:event_list' %}" class="sidebar-link {% if '/analytics/' in request.path %}active{% endif %}">
+                <i class="bi bi-graph-up-arrow"></i>
+                <span>Analytics</span>
+            </a>
+
+        </nav>
+
+        <!-- Footer -->
+        <div class="sidebar-footer">
+            <button id="pwa-install-btn" class="btn btn-warning btn-sm w-100 mb-3" style="display: none;">
+                <i class="bi bi-download me-1"></i> Install App
+            </button>
+            <div class="sidebar-user">
+                <div class="user-avatar">{{ user.username|first|upper }}</div>
+                <div class="user-name">{{ user.username }}</div>
+            </div>
+            <form method="post" action="{% url 'logout' %}" class="mt-2">
+                {% csrf_token %}
+                <button type="submit" class="sidebar-logout-btn">
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Sign Out</span>
+                </button>
+            </form>
+        </div>
+
+    </aside>
+
+    <!-- Mobile Top Bar -->
+    <nav class="topbar d-lg-none">
+        <button class="topbar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+            <i class="bi bi-list"></i>
+        </button>
+        <a href="{% url 'home' %}" class="topbar-brand">MyHub</a>
+        <div style="width: 40px;"></div>
     </nav>
 
-    <div class="container mt-4">
+    <!-- Sidebar Overlay (mobile) -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
         {% if messages %}
             {% for message in messages %}
-                <div class="alert alert-{{ message.tags }}">
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
                     {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 </div>
             {% endfor %}
         {% endif %}
 
-        {% block content %}
-        {% endblock %}
+        {% block content %}{% endblock %}
+    </main>
+
+{% else %}
+
+    <!-- Unauthenticated: simple top navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'login' %}">
+                <i class="bi bi-grid-3x3-gap-fill me-2 text-primary"></i>MyHub
+            </a>
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'login' %}">Login</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'accounts:register' %}">Register</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block unauthenticated_content %}{% endblock %}
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- PWA and Service Worker Registration -->
-    <script>
-        // Register service worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', function() {
-                navigator.serviceWorker.register('{% static "sw.js" %}')
-                    .then(function(registration) {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                        
-                        // Check for updates
-                        registration.addEventListener('updatefound', function() {
-                            const newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', function() {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    // New content is available, show update notification
-                                    if (confirm('New version available! Reload to update?')) {
-                                        window.location.reload();
-                                    }
+{% endif %}
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Sidebar toggle for mobile -->
+<script>
+    (function () {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebarOverlay');
+        const toggle = document.getElementById('sidebarToggle');
+
+        if (toggle && sidebar && overlay) {
+            toggle.addEventListener('click', function () {
+                sidebar.classList.toggle('sidebar-open');
+                overlay.classList.toggle('show');
+            });
+            overlay.addEventListener('click', function () {
+                sidebar.classList.remove('sidebar-open');
+                overlay.classList.remove('show');
+            });
+        }
+    })();
+</script>
+
+<!-- PWA and Service Worker Registration -->
+<script>
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function () {
+            navigator.serviceWorker.register('{% static "sw.js" %}')
+                .then(function (registration) {
+                    registration.addEventListener('updatefound', function () {
+                        const newWorker = registration.installing;
+                        newWorker.addEventListener('statechange', function () {
+                            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                if (confirm('New version available! Reload to update?')) {
+                                    window.location.reload();
                                 }
-                            });
+                            }
                         });
-                    })
-                    .catch(function(error) {
-                        console.log('ServiceWorker registration failed: ', error);
                     });
-            });
-        }
-
-        // PWA Install Prompt
-        let deferredPrompt;
-        const installButton = document.getElementById('pwa-install-btn');
-
-        window.addEventListener('beforeinstallprompt', (e) => {
-            // Prevent Chrome 67 and earlier from automatically showing the prompt
-            e.preventDefault();
-            // Stash the event so it can be triggered later
-            deferredPrompt = e;
-
-            // Show the install button
-            if (installButton) {
-                installButton.style.display = 'block';
-            }
+                });
         });
+    }
 
-        // Handle install button click
-        if (installButton) {
-            installButton.addEventListener('click', async () => {
-                if (!deferredPrompt) {
-                    return;
-                }
+    let deferredPrompt;
+    const installButton = document.getElementById('pwa-install-btn');
 
-                // Show the install prompt
-                deferredPrompt.prompt();
+    window.addEventListener('beforeinstallprompt', function (e) {
+        e.preventDefault();
+        deferredPrompt = e;
+        if (installButton) installButton.style.display = 'block';
+    });
 
-                // Wait for the user to respond to the prompt
-                const { outcome } = await deferredPrompt.userChoice;
-
-                if (outcome === 'accepted') {
-                    console.log('User accepted the install prompt');
-                } else {
-                    console.log('User dismissed the install prompt');
-                }
-
-                // Clear the deferredPrompt
-                deferredPrompt = null;
-
-                // Hide the install button
-                installButton.style.display = 'none';
-            });
-        }
-
-        // Handle successful installation
-        window.addEventListener('appinstalled', (evt) => {
-            console.log('PWA was installed');
-            // Hide the install button
-            if (installButton) {
-                installButton.style.display = 'none';
-            }
+    if (installButton) {
+        installButton.addEventListener('click', async function () {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            deferredPrompt = null;
+            installButton.style.display = 'none';
         });
+    }
 
-        // Hide install button if already running as installed PWA
-        if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
-            if (installButton) {
-                installButton.style.display = 'none';
-            }
-        }
+    window.addEventListener('appinstalled', function () {
+        if (installButton) installButton.style.display = 'none';
+    });
 
-        // Network status monitoring
-        function updateOnlineStatus() {
-            const status = navigator.onLine ? 'online' : 'offline';
-            console.log('Network status:', status);
-            
-            if (!navigator.onLine) {
-                showOfflineNotification();
-            }
-        }
+    if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true) {
+        if (installButton) installButton.style.display = 'none';
+    }
 
-        function showOfflineNotification() {
-            const notification = document.createElement('div');
-            notification.className = 'alert alert-warning alert-dismissible fade show';
-            notification.style.cssText = 'position: fixed; top: 20px; left: 20px; z-index: 9999;';
-            notification.innerHTML = `
-                <strong>You're offline!</strong> Don't worry, you can still browse cached content.
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            document.body.appendChild(notification);
-            
-            setTimeout(() => {
-                if (notification.parentNode) {
-                    notification.parentNode.removeChild(notification);
-                }
-            }, 5000);
-        }
+    window.addEventListener('offline', function () {
+        const notification = document.createElement('div');
+        notification.className = 'alert alert-warning alert-dismissible fade show';
+        notification.style.cssText = 'position: fixed; bottom: 1rem; left: 50%; transform: translateX(-50%); z-index: 9999; white-space: nowrap;';
+        notification.innerHTML = '<strong>You\'re offline.</strong> Cached content still available. <button type="button" class="btn-close" data-bs-dismiss="alert"></button>';
+        document.body.appendChild(notification);
+        setTimeout(function () { if (notification.parentNode) notification.parentNode.removeChild(notification); }, 5000);
+    });
+</script>
 
-        window.addEventListener('online', updateOnlineStatus);
-        window.addEventListener('offline', updateOnlineStatus);
-
-        // Initial network status check
-        updateOnlineStatus();
-
-        // Add some basic analytics for PWA usage
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.ready.then(function(registration) {
-                // Track PWA installation
-                if (window.matchMedia('(display-mode: standalone)').matches) {
-                    console.log('App is running in standalone mode');
-                }
-            });
-        }
-    </script>
 </body>
 </html>

@@ -1,8 +1,10 @@
 from django.urls import reverse_lazy
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views import generic
 from django.db.models import Q
+from django.contrib import messages
 
+from myhub.mixins import UserIsOwnerMixin, SuccessMessageMixin
 from .models import Project
 from .forms import ProjectForm
 
@@ -35,43 +37,34 @@ class ProjectListView(LoginRequiredMixin, generic.ListView):
         return context
 
 
-class ProjectCreateView(LoginRequiredMixin, generic.CreateView):
+class ProjectCreateView(LoginRequiredMixin, SuccessMessageMixin, generic.CreateView):
     model = Project
     form_class = ProjectForm
     template_name = 'projects/project_form.html'
+    success_message = "Project created successfully."
 
     def form_valid(self, form):
         form.instance.owner = self.request.user
         return super().form_valid(form)
 
 
-class ProjectDetailView(LoginRequiredMixin, UserPassesTestMixin, generic.DetailView):
+class ProjectDetailView(LoginRequiredMixin, UserIsOwnerMixin, generic.DetailView):
     model = Project
     template_name = 'projects/project_detail.html'
 
     def get_queryset(self):
         return Project.objects.select_related('owner').prefetch_related('transactions', 'tasks')
 
-    def test_func(self):
-        project = self.get_object()
-        return project.owner == self.request.user
 
-
-class ProjectUpdateView(LoginRequiredMixin, UserPassesTestMixin, generic.UpdateView):
+class ProjectUpdateView(LoginRequiredMixin, UserIsOwnerMixin, SuccessMessageMixin, generic.UpdateView):
     model = Project
     form_class = ProjectForm
     template_name = 'projects/project_form.html'
-
-    def test_func(self):
-        project = self.get_object()
-        return project.owner == self.request.user
+    success_message = "Project updated successfully."
 
 
-class ProjectDeleteView(LoginRequiredMixin, UserPassesTestMixin, generic.DeleteView):
+class ProjectDeleteView(LoginRequiredMixin, UserIsOwnerMixin, SuccessMessageMixin, generic.DeleteView):
     model = Project
     success_url = reverse_lazy('projects:project_list')
     template_name = 'projects/project_confirm_delete.html'
-
-    def test_func(self):
-        project = self.get_object()
-        return project.owner == self.request.user
+    success_message = "Project deleted successfully."

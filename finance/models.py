@@ -1,8 +1,11 @@
 from decimal import Decimal
+from datetime import timedelta, date
 
 from django.db import models
 from django.conf import settings
 from django.urls import reverse
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
 
 
 class Account(models.Model):
@@ -26,6 +29,9 @@ class Account(models.Model):
 
     class Meta:
         ordering = ['name']
+        indexes = [
+            models.Index(fields=['user', 'is_active']),
+        ]
 
     def __str__(self):
         return f"{self.name} ({self.get_account_type_display()})"
@@ -84,6 +90,13 @@ class Transaction(models.Model):
 
     class Meta:
         ordering = ['-date', '-created_at']
+        indexes = [
+            models.Index(fields=['user', 'date']),
+            models.Index(fields=['user', 't_type']),
+            models.Index(fields=['user', 'category']),
+            models.Index(fields=['account', 'date']),
+            models.Index(fields=['project', 'date']),
+        ]
 
     def __str__(self):
         return f"{self.t_type} {self.amount} - {self.category or 'Uncategorized'} on {self.date}"
@@ -126,15 +139,54 @@ class Subscription(models.Model):
     frequency = models.CharField(max_length=20, choices=FREQUENCY_CHOICES, default='monthly')
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     reminder_days_before = models.PositiveIntegerField(default=2, help_text="Days before next payment to send reminder SMS")
+    enable_reminders = models.BooleanField(default=True, help_text="Enable SMS reminders for this subscription")
     notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['next_payment_date', 'name']
+        indexes = [
+            models.Index(fields=['user', 'status']),
+            models.Index(fields=['user', 'next_payment_date']),
+            models.Index(fields=['account', 'next_payment_date']),
+        ]
 
     def __str__(self):
         return f"{self.name} - {self.amount} {self.currency}"
 
     def get_absolute_url(self):
         return reverse('finance:subscription_detail', kwargs={'pk': self.pk})
+
+    def clean(self):
+        """Validate subscription data."""
+        if self.next_payment_date and self.next_payment_date < date.today():
+            raise ValidationError({'next_payment_date': _('Next payment date cannot be in the past.')})
+
+    def update_next_payment_date(self):
+        """
+        Calculate and update the next payment date based on frequency.
+        Call this after a payment is made.
+        """
+        from datetime import timedelta
+
+        frequency_days = {
+            'weekly': 7,
+            'monthly': 30,
+            'quarterly': 90,
+            'yearly': 365,
+        }
+
+        if self.frequency == 'custom':
+            # For custom frequency, don't auto-update
+            return
+
+        days_to_add = frequency_days.get(self.frequency, 30)
+        self.next_payment_date += timedelta(days=days_to_add)
+        self.save(update_fields=['next_payment_date'])
+
+    def save(self, *args, **kwargs):
+        # Ensure next_payment_date is not in the past on create
+        if not self.pk and self.next_payment_date and self.next_payment_date < date.today():
+            raise ValidationError(_('Next payment date cannot be in the past.'))
+        super().save(*args, **kwargs)

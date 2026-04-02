@@ -1,4 +1,7 @@
 from django import forms
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+from decimal import Decimal
 from .models import Transaction, Account, Subscription
 
 
@@ -44,6 +47,12 @@ class TransactionForm(forms.ModelForm):
             'description': 'Description',
         }
 
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if amount is not None and amount <= 0:
+            raise ValidationError("Amount must be greater than zero.")
+        return amount
+
 
 class AccountForm(forms.ModelForm):
     class Meta:
@@ -78,6 +87,12 @@ class AccountForm(forms.ModelForm):
             'is_active': 'Active',
         }
 
+    def clean_initial_balance(self):
+        balance = self.cleaned_data.get('initial_balance')
+        if balance is not None and balance < 0:
+            raise ValidationError("Initial balance cannot be negative.")
+        return balance
+
 
 class SubscriptionForm(forms.ModelForm):
     class Meta:
@@ -93,6 +108,7 @@ class SubscriptionForm(forms.ModelForm):
             'frequency',
             'status',
             'reminder_days_before',
+            'enable_reminders',
             'notes',
         ]
         widgets = {
@@ -136,6 +152,7 @@ class SubscriptionForm(forms.ModelForm):
                 'step': 1,
                 'placeholder': 'Days before next payment'
             }),
+            'enable_reminders': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
             'notes': forms.Textarea(attrs={
                 'class': 'form-control',
                 'rows': 3,
@@ -153,5 +170,26 @@ class SubscriptionForm(forms.ModelForm):
             'frequency': 'Frequency',
             'status': 'Status',
             'reminder_days_before': 'Reminder (days before)',
+            'enable_reminders': 'Enable SMS Reminders',
             'notes': 'Notes (Optional)',
         }
+
+    def clean_amount(self):
+        amount = self.cleaned_data.get('amount')
+        if amount is not None and amount <= 0:
+            raise ValidationError("Amount must be greater than zero.")
+        return amount
+
+    def clean_next_payment_date(self):
+        date = self.cleaned_data.get('next_payment_date')
+        if date and date < timezone.now().date():
+            raise ValidationError("Next payment date cannot be in the past.")
+        return date
+
+    def clean_reminder_days_before(self):
+        days = self.cleaned_data.get('reminder_days_before')
+        if days is not None and days < 0:
+            raise ValidationError("Reminder days must be positive.")
+        if days is not None and days > 365:
+            raise ValidationError("Reminder days cannot exceed 365.")
+        return days

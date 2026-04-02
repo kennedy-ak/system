@@ -1,15 +1,15 @@
 from datetime import timedelta
 from typing import List, Tuple, Dict, Any
 
-from django.core.management.base import BaseCommand
-from django.utils import timezone
-from django.db.models import Q
+from django.core.management.base import BaseCommand # type: ignore
+from django.utils import timezone #type: ignore
+from django.db.models import Q  # type: ignore
 
 from finance.models import Subscription
 from tasks.models import Task
 from accounts.models import UserProfile
 from notifications.services.mnotify import send_sms
-from django.conf import settings
+from django.conf import settings  # type: ignore
 
 
 def get_user_phone(user) -> str:
@@ -46,10 +46,11 @@ class Command(BaseCommand):
         subs_window = now + timedelta(days=settings.SUBSCRIPTION_REMINDER_DAYS_BEFORE)
         tasks_window = timezone.now() + timedelta(minutes=settings.TASK_REMINDER_MINUTES_BEFORE)
 
-        # Subscriptions
+        # Subscriptions - only those with reminders enabled
         subs = (
             Subscription.objects.filter(
                 status="active",
+                enable_reminders=True,
                 next_payment_date__gte=now,
                 next_payment_date__lte=subs_window,
             )
@@ -70,12 +71,13 @@ class Command(BaseCommand):
                 sms_url=sms_url,
                 dry_run=dry_run,
             )
-            results.append((f"subscription:{sub.id}", ok, detail))
+            results.append((f"subscription:{sub.id}", ok, detail))  # type: ignore
 
-        # Tasks
+        # Tasks - only those with reminders enabled
         tasks = (
             Task.objects.filter(
                 Q(status="pending") | Q(status="in_progress"),
+                enable_reminders=True,
                 deadline__isnull=False,
                 deadline__gte=timezone.now(),
                 deadline__lte=tasks_window,
@@ -96,7 +98,7 @@ class Command(BaseCommand):
                 sms_url=sms_url,
                 dry_run=dry_run,
             )
-            results.append((f"task:{task.id}", ok, detail))
+            results.append((f"task:{task.id}", ok, detail)) # type: ignore
 
         sent = [r for r in results if r[1]]
         failed = [r for r in results if not r[1]]
